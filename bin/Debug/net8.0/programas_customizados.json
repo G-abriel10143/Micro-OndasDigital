@@ -1,0 +1,11 @@
+[
+  {
+    "Nome": "Teste",
+    "Alimento": "Batata",
+    "Tempo": 3,
+    "Potencia": 2,
+    "CaractereDeAquecimento": "....",
+    "Instrucoes": "",
+    "IsCustomizado": true
+  }
+]

@@ -1,48 +1,58 @@
 using System;
 
-public class Program
+class Program
 {
-    public static void Main()
+    static void Main()
     {
         var controller = new MicroondasController();
 
-        Console.WriteLine("Escolha o programa de aquecimento:");
-        Console.WriteLine("1. Pipoca");
-        Console.WriteLine("2. Leite");
-        Console.WriteLine("3. Carnes de boi");
-        Console.WriteLine("4. Frango");
-        Console.WriteLine("5. Feijão");
-        Console.Write("Digite o número do programa desejado: ");
-        var escolha = Console.ReadLine();
-
-        string nomePrograma = escolha switch
+        while (true)
         {
-            "1" => "Pipoca",
-            "2" => "Leite",
-            "3" => "Carnes de boi",
-            "4" => "Frango",
-            "5" => "Feijão",
-            _ => null
-        };
+            Console.WriteLine("\nMenu:");
+            Console.WriteLine("1. Exibir programas");
+            Console.WriteLine("2. Iniciar um programa");
+            Console.WriteLine("3. Cadastrar programa customizado");
+            Console.WriteLine("4. Sair");
+            Console.Write("Escolha uma opção: ");
+            var opcao = Console.ReadLine();
 
-        if (nomePrograma != null)
-        {
-            Console.WriteLine(controller.IniciarPrograma(nomePrograma));
+            switch (opcao)
+            {
+                case "1":
+                    controller.ExibirProgramas();
+                    break;
+
+                case "2":
+                    Console.Write("Digite o nome do programa desejado: ");
+                    var nome = Console.ReadLine();
+                    Console.WriteLine(controller.IniciarPrograma(nome));
+                    break;
+
+                case "3":
+                    Console.Write("Nome do programa: ");
+                    var nomePrograma = Console.ReadLine();
+                    Console.Write("Alimento: ");
+                    var alimento = Console.ReadLine();
+                    Console.Write("Tempo (em segundos): ");
+                    if (!int.TryParse(Console.ReadLine(), out var tempo)) tempo = 0;
+                    Console.Write("Potência (1-10): ");
+                    if (!int.TryParse(Console.ReadLine(), out var potencia)) potencia = 0;
+                    Console.Write("Caractere de aquecimento: ");
+                    var caractere = Console.ReadLine();
+                    Console.Write("Instruções (opcional): ");
+                    var instrucoes = Console.ReadLine();
+
+                    Console.WriteLine(controller.CadastrarProgramaCustomizado(nomePrograma, alimento, tempo, potencia, caractere, instrucoes));
+                    break;
+
+                case "4":
+                    Console.WriteLine("Encerrando...");
+                    return;
+
+                default:
+                    Console.WriteLine("Opção inválida.");
+                    break;
+            }
         }
-        else
-        {
-            Console.WriteLine("Opção inválida.");
-        }
-
-        // Atualizando o progresso
-        for (int i = 0; i < 30; i++)
-        {
-            Console.WriteLine(controller.AtualizarProgresso());
-        }
-
-        // Pausar ou cancelar
-        controller.PausarOuCancelar();
-        Console.WriteLine("Aquecimento pausado.");
-        Console.ReadLine(); // Para manter a janela aberta
     }
 }

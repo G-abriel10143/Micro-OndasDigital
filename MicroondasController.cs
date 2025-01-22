@@ -1,100 +1,103 @@
-﻿public class MicroondasController
-{
-    private readonly AquecimentoService _service = new();
-    private AquecimentoModel _model = new();
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
 
+public class MicroondasController
+{
     private List<ProgramaAquecimento> programas = new List<ProgramaAquecimento>
     {
-        new ProgramaAquecimento
-        {
-            Nome = "Pipoca",
-            Alimento = "Pipoca (de micro-ondas)",
-            Tempo = 180,  // 3 minutos
-            Potencia = 7,
-            Instrucoes = "Observar o barulho de estouros do milho, caso houver um intervalo de mais de 10 segundos entre um estouro e outro, interrompa o aquecimento.",
-            StringDeAquecimento = new string('.', 180 * 7) // Um exemplo de string de progresso
-        },
-        new ProgramaAquecimento
-        {
-            Nome = "Leite",
-            Alimento = "Leite",
-            Tempo = 300,  // 5 minutos
-            Potencia = 5,
-            Instrucoes = "Cuidado com aquecimento de líquidos, o choque térmico aliado ao movimento do recipiente pode causar fervura imediata causando risco de queimaduras.",
-            StringDeAquecimento = new string('.', 300 * 5)
-        },
-        new ProgramaAquecimento
-        {
-            Nome = "Carnes de boi",
-            Alimento = "Carne em pedaço ou fatias",
-            Tempo = 840,  // 14 minutos
-            Potencia = 4,
-            Instrucoes = "Interrompa o processo na metade e vire o conteúdo com a parte de baixo para cima para o descongelamento uniforme.",
-            StringDeAquecimento = new string('.', 840 * 4)
-        },
-        new ProgramaAquecimento
-        {
-            Nome = "Frango",
-            Alimento = "Frango (qualquer corte)",
-            Tempo = 480,  // 8 minutos
-            Potencia = 7,
-            Instrucoes = "Interrompa o processo na metade e vire o conteúdo com a parte de baixo para cima para o descongelamento uniforme.",
-            StringDeAquecimento = new string('.', 480 * 7)
-        },
-        new ProgramaAquecimento
-        {
-            Nome = "Feijão",
-            Alimento = "Feijão congelado",
-            Tempo = 480,  // 8 minutos
-            Potencia = 9,
-            Instrucoes = "Deixe o recipiente destampado e em casos de plástico, cuidado ao retirar o recipiente pois o mesmo pode perder resistência em altas temperaturas.",
-            StringDeAquecimento = new string('.', 480 * 9)
-        }
+        new ProgramaAquecimento { Nome = "Pipoca", Alimento = "Milho", Tempo = 180, Potencia = 7, CaractereDeAquecimento = ".", Instrucoes = "Observar o barulho de estouros do milho." },
+        new ProgramaAquecimento { Nome = "Leite", Alimento = "Leite", Tempo = 120, Potencia = 5, CaractereDeAquecimento = "." },
+        new ProgramaAquecimento { Nome = "Pizza", Alimento = "Pizza", Tempo = 300, Potencia = 8, CaractereDeAquecimento = "." }
     };
 
-    public string IniciarPrograma(string nomePrograma)
+    private List<ProgramaAquecimento> customizados = new();
+    private const string CaminhoJson = "programas_customizados.json";
+
+    public MicroondasController()
     {
-        var programa = programas.FirstOrDefault(p => p.Nome.Equals(nomePrograma, StringComparison.OrdinalIgnoreCase));
+        CarregarProgramasCustomizados();
+    }
+
+    private void CarregarProgramasCustomizados()
+    {
+        if (File.Exists(CaminhoJson))
+        {
+            var json = File.ReadAllText(CaminhoJson);
+            customizados = JsonConvert.DeserializeObject<List<ProgramaAquecimento>>(json) ?? new List<ProgramaAquecimento>();
+        }
+    }
+
+    private void SalvarProgramasCustomizados()
+    {
+        var json = JsonConvert.SerializeObject(customizados, Formatting.Indented);
+        File.WriteAllText(CaminhoJson, json);
+    }
+
+    public string CadastrarProgramaCustomizado(string nome, string alimento, int tempo, int potencia, string caractere, string instrucoes = "")
+    {
+        if (string.IsNullOrWhiteSpace(nome) || string.IsNullOrWhiteSpace(alimento) || tempo <= 0 || potencia < 1 || potencia > 10 || string.IsNullOrWhiteSpace(caractere))
+        {
+            return "Erro: Todos os campos obrigatórios devem ser preenchidos corretamente.";
+        }
+
+        if (caractere == "." || programas.Any(p => p.CaractereDeAquecimento == caractere) || customizados.Any(c => c.CaractereDeAquecimento == caractere))
+        {
+            return "Erro: O caractere de aquecimento já está em uso ou é inválido.";
+        }
+
+        var programa = new ProgramaAquecimento
+        {
+            Nome = nome,
+            Alimento = alimento,
+            Tempo = tempo,
+            Potencia = potencia,
+            CaractereDeAquecimento = caractere,
+            Instrucoes = instrucoes,
+            IsCustomizado = true
+        };
+
+        customizados.Add(programa);
+        SalvarProgramasCustomizados();
+        return "Programa customizado cadastrado com sucesso!";
+    }
+
+    public void ExibirProgramas()
+    {
+        Console.WriteLine("Programas disponíveis:");
+
+        foreach (var programa in programas)
+        {
+            Console.WriteLine($"- {programa.Nome} (Tempo: {programa.Tempo / 60}:{programa.Tempo % 60:D2}, Potência: {programa.Potencia})");
+        }
+
+        foreach (var programa in customizados)
+        {
+            Console.WriteLine($"* {programa.Nome} (Tempo: {programa.Tempo / 60}:{programa.Tempo % 60:D2}, Potência: {programa.Potencia}) [Customizado, Itálico]");
+        }
+    }
+
+    public string IniciarPrograma(string nome)
+    {
+        var programa = programas.FirstOrDefault(p => p.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase)) ??
+                       customizados.FirstOrDefault(c => c.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase));
 
         if (programa == null)
         {
-            return "Erro: Programa de aquecimento não encontrado.";
+            return "Erro: Programa não encontrado.";
         }
 
-        _model.TempoRestante = programa.Tempo;
-        _model.Potencia = programa.Potencia;
-        _model.EmExecucao = true;
+        Console.WriteLine($"Programa '{programa.Nome}' iniciado para {programa.Alimento}. Tempo: {programa.Tempo / 60}:{programa.Tempo % 60:D2}, Potência: {programa.Potencia}.");
+        Console.WriteLine($"Instruções: {programa.Instrucoes ?? "Sem instruções específicas."}");
 
-        return $"Programa '{programa.Nome}' iniciado para {programa.Alimento}. Tempo: {programa.Tempo / 60}:{programa.Tempo % 60:D2}, Potência: {programa.Potencia}.\nInstruções: {programa.Instrucoes}";
-    }
-
-    public string AtualizarProgresso()
-    {
-        if (_model.EmExecucao)
+        for (int i = 0; i < programa.Tempo; i++)
         {
-            _model.TempoRestante--;
-            if (_model.TempoRestante <= 0)
-            {
-                _model.EmExecucao = false;
-                return "Aquecimento concluído.";
-            }
-
-            return _service.GerarStringDeProgresso(_model.TempoRestante, _model.Potencia);
+            Console.Write(programa.CaractereDeAquecimento);
+            System.Threading.Thread.Sleep(500);
         }
 
-        return "Nenhum aquecimento em execução.";
-    }
-
-    public void PausarOuCancelar()
-    {
-        if (_model.EmExecucao)
-        {
-            _model.Pausado = !_model.Pausado;
-            _model.EmExecucao = !_model.Pausado;
-        }
-        else
-        {
-            _model = new AquecimentoModel();
-        }
+        return "\nAquecimento concluído.";
     }
 }
