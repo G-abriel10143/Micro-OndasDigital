@@ -1,10 +1,11 @@
 public class ProgramaAquecimento
 {
+    public int Id { get; set; }
     public string Nome { get; set; }
     public string Alimento { get; set; }
-    public int Tempo { get; set; }
     public int Potencia { get; set; }
-    public string CaractereDeAquecimento { get; set; } // Caractere usado no progresso
-    public string Instrucoes { get; set; }
-    public bool IsCustomizado { get; set; } // Diferencia customizados de pré-definidos
+    public string CaractereAquecimento { get; set; }
+    public int Tempo { get; set; } // Em segundos ou minutos
+    public string? Instrucoes { get; set; }
+    public bool IsCustom { get; set; }
 }

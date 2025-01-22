@@ -1,56 +1,63 @@
 using System;
+using System.Configuration;
 
-class Program
+public class Program
 {
-    static void Main()
+    public static void Main()
     {
-        var controller = new MicroondasController();
+        // Obter a string de conexão do arquivo de configuração
+        string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["MicroondasDigitalDb"].ConnectionString;
+
+        var controller = new MicroondasController(connectionString);
 
         while (true)
         {
-            Console.WriteLine("\nMenu:");
-            Console.WriteLine("1. Exibir programas");
-            Console.WriteLine("2. Iniciar um programa");
-            Console.WriteLine("3. Cadastrar programa customizado");
-            Console.WriteLine("4. Sair");
+            Console.Clear();
+            Console.WriteLine("Menu:");
+            Console.WriteLine("1. Listar todos os programas");
+            Console.WriteLine("2. Adicionar programa customizado");
+            Console.WriteLine("3. Sair");
             Console.Write("Escolha uma opção: ");
             var opcao = Console.ReadLine();
 
             switch (opcao)
             {
                 case "1":
-                    controller.ExibirProgramas();
+                    var programas = controller.ListarTodosProgramas();
+                    Console.WriteLine("\nProgramas de Aquecimento:");
+                    foreach (var programa in programas)
+                    {
+                        var estilo = programa.IsCustom ? " (customizado, itálico)" : "";
+                        Console.WriteLine($"- {programa.Nome}{estilo}: {programa.Alimento}, Potência: {programa.Potencia}, Tempo: {programa.Tempo / 60}:{programa.Tempo % 60:D2}");
+                    }
+                    Console.ReadKey();
                     break;
 
                 case "2":
-                    Console.Write("Digite o nome do programa desejado: ");
-                    var nome = Console.ReadLine();
-                    Console.WriteLine(controller.IniciarPrograma(nome));
-                    break;
-
-                case "3":
                     Console.Write("Nome do programa: ");
-                    var nomePrograma = Console.ReadLine();
+                    var nome = Console.ReadLine();
                     Console.Write("Alimento: ");
                     var alimento = Console.ReadLine();
-                    Console.Write("Tempo (em segundos): ");
-                    if (!int.TryParse(Console.ReadLine(), out var tempo)) tempo = 0;
                     Console.Write("Potência (1-10): ");
-                    if (!int.TryParse(Console.ReadLine(), out var potencia)) potencia = 0;
+                    var potencia = int.Parse(Console.ReadLine());
                     Console.Write("Caractere de aquecimento: ");
-                    var caractere = Console.ReadLine();
+                    var caractereAquecimento = Console.ReadLine();
+                    Console.Write("Tempo em segundos: ");
+                    var tempo = int.Parse(Console.ReadLine());
                     Console.Write("Instruções (opcional): ");
                     var instrucoes = Console.ReadLine();
 
-                    Console.WriteLine(controller.CadastrarProgramaCustomizado(nomePrograma, alimento, tempo, potencia, caractere, instrucoes));
+                    var mensagem = controller.AdicionarProgramaCustomizado(nome, alimento, potencia, caractereAquecimento, tempo, instrucoes);
+                    Console.WriteLine(mensagem);
+                    Console.ReadKey();
                     break;
 
-                case "4":
-                    Console.WriteLine("Encerrando...");
+                case "3":
                     return;
 
                 default:
                     Console.WriteLine("Opção inválida.");
+                    Console.ReadKey();
                     break;
             }
         }
