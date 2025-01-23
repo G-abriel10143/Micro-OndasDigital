@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Micro-OndasDigital")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+21d28d1aa21eb99583874d4d08d3badf584385b8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f6dc5ae0b65e182d949e43b908dc39acffc1f8e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Micro-OndasDigital")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Micro-OndasDigital")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
